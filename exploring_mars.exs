@@ -8,34 +8,50 @@ defmodule ExploringMars do
       read_splited_line()
       |> Enum.map(fn value -> String.to_integer(value) end)
 
-    [probe_x, probe_y, probe_direction] = read_splited_line()
+    run(read_splited_line(), {x, y})
+  end
 
-    probe = %Probe{
-      x: String.to_integer(probe_x),
-      y: String.to_integer(probe_y),
-      direction: probe_direction
-    }
+  def run(line, {x, y}) do
+    if line do
+      [probe_x, probe_y, probe_direction] = line
 
-    {:ok, agent} = Agent.start_link(fn -> probe end)
+      probe = %Probe{
+        x: String.to_integer(probe_x),
+        y: String.to_integer(probe_y),
+        direction: probe_direction
+      }
 
-    commands = read_all_line() |> String.graphemes()
+      {:ok, agent} = Agent.start_link(fn -> probe end)
 
-    Enum.each(commands, fn command ->
+      commands = read_all_line() |> String.graphemes()
+
+      Enum.each(commands, fn command ->
+        probe = Agent.get(agent, fn probe -> probe end)
+        Agent.update(agent, fn _ -> Probe.move(probe, command, {x, y}) end)
+      end)
+
       probe = Agent.get(agent, fn probe -> probe end)
-      Agent.update(agent, fn _ -> Probe.move(probe, command, {x, y}) end)
-    end)
 
-    Agent.get(agent, fn probe -> probe end)
+      IO.puts("#{probe.x} #{probe.y} #{probe.direction}")
+
+      Agent.stop(agent)
+
+      run(read_splited_line(), {x, y})
+    end
   end
 
   def read_all_line() do
-    IO.gets("")
-    |> String.trim()
+    line = IO.gets("")
+
+    case line do
+      :eof -> false
+      value -> String.trim(value)
+    end
   end
 
   def read_splited_line(char \\ " ") do
-    read_all_line()
-    |> String.split(char)
+    line = read_all_line()
+    (line && String.split(line, char)) || false
   end
 end
 
