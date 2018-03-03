@@ -1,8 +1,10 @@
+# Importa o código de probe.exs
 Code.load_file("probe.exs")
 
 defmodule ExploringMars do
   alias Probe
 
+  # Função que inicia o programa
   def main() do
     [x, y] =
       read_splited_line()
@@ -11,6 +13,7 @@ defmodule ExploringMars do
     run(read_splited_line(), {x, y})
   end
 
+  # Função recursiva que executa os comandos de cada sonda
   def run(line, {x, y}) do
     if line do
       [probe_x, probe_y, probe_direction] = line
@@ -21,6 +24,7 @@ defmodule ExploringMars do
         direction: probe_direction
       }
 
+      # Inicia agente para controlar o status da sonda
       {:ok, agent} = Agent.start_link(fn -> probe end)
 
       commands = read_all_line() |> String.graphemes()
@@ -55,4 +59,5 @@ defmodule ExploringMars do
   end
 end
 
+# Chama função main e inicia programa
 ExploringMars.main()
