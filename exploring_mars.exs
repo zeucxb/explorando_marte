@@ -10,15 +10,19 @@ defmodule ExploringMars do
 
     [probe_x, probe_y, probe_direction] = read_splited_line()
 
-    probe = %Probe{x: probe_x, y: probe_y, direction: probe_direction}
+    probe = %Probe{
+      x: String.to_integer(probe_x),
+      y: String.to_integer(probe_y),
+      direction: probe_direction
+    }
 
     {:ok, agent} = Agent.start_link(fn -> probe end)
 
     commands = read_all_line() |> String.graphemes()
 
     Enum.each(commands, fn command ->
-      probe = Agent.get(agent, fn probe -> probe end) |> IO.inspect()
-      Agent.update(agent, fn _ -> Probe.move(probe, command) end)
+      probe = Agent.get(agent, fn probe -> probe end)
+      Agent.update(agent, fn _ -> Probe.move(probe, command, {x, y}) end)
     end)
 
     Agent.get(agent, fn probe -> probe end)

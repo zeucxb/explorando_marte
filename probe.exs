@@ -22,7 +22,7 @@ defmodule Probe do
     end
   end
 
-  def move(probe, command) do
+  def move(probe, command, {x, y}) do
     case command do
       "L" ->
         {:ok, probe_direction} = get_direction(probe, command)
@@ -33,7 +33,22 @@ defmodule Probe do
         %Probe{probe | direction: probe_direction}
 
       "M" ->
-        probe
+        cond do
+          probe.direction == "N" && probe.y < y ->
+            %Probe{probe | y: probe.y + 1}
+
+          probe.direction == "E" && probe.x < x ->
+            %Probe{probe | x: probe.x + 1}
+
+          probe.direction == "W" && probe.x > 0 ->
+            %Probe{probe | x: probe.x - 1}
+
+          probe.direction == "S" && probe.y > 0 ->
+            %Probe{probe | y: probe.y - 1}
+
+          true ->
+            probe
+        end
     end
   end
 end
